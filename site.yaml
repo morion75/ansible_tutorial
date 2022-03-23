@@ -1,0 +1,78 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: install update (Rocky or CentOS)
+    tags: always
+    dnf:
+      update_only: yes
+      update_cache: yes
+    when: ansible_distribution in ["Rocky", "CentOS"]
+
+  - name: install update (Ubuntu)
+    tags: always
+    apt: 
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: web_servers
+  become: true
+  tasks:
+
+  - name: install httpd & php support for apache (Rocky or CentOS)
+    tags: apache,httpd,centos,rocky
+    dnf:
+      name:
+        - httpd
+        - php
+      state: present
+    when: ansible_distribution in ["Rocky", "CentOS"]
+
+  - name: install apache2 & php  package (Ubuntu)
+    tags: apache,apache2,ubuntu
+    apt:
+      name:
+        - apache2
+        - libapache2-mod-php
+      state: present
+    when: ansible_distribution == "Ubuntu"
+
+  - name: copy defula html file for site
+    tags: apache,apache2,httpd
+    copy:
+      src: default_site.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: 0644
+
+- hosts: db_servers
+  become: true
+  tasks:
+
+  - name: install mariadb package(Rocky or CentOS)
+    tags: centos,rocky,db,mariadb
+    dnf:
+      name: mariadb,mariadb-server
+      state: latest
+    when: ansible_distribution in ["Rocky", "CentOS"]
+
+  - name: install maraidb package(Ubuntu)
+    tags: ubuntu,db,mariadb
+    apt:
+      name: mariadb-server
+      status: latest
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: file_servers
+  become: true
+  tasks:
+
+  - name: install samba package
+    tags: samba,centos,rocky,ubuntu
+    package: 
+      name: samba
+      state: latest

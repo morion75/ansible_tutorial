@@ -1,0 +1,5 @@
+10.10.138.71 apache_package=httpd php_package=php
+10.10.138.72 apache_package=httpd php_package=php
+10.10.138.73 apache_package=httpd php_package=php
+
+# 127.0.0.1 apach_package=apache2 php_package=libapache2-mod-php
