@@ -20,110 +20,25 @@
 
 - hosts: all
   become: true
-  tasks:
-
-  - name: add ssh key for simone
-    tags: always
-    authorized_key:
-      user: simone
-      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPVgghzSXVgdqCIPMShj6nDiAEzVm8cRsbiozdsScRr9 morion defualt"
+  roles:
+    - base
 
 - hosts: workstations
   become: true
-  tasks:
-
-  - name: install unzip
-    package:
-      name: unzip
-
-  - name: install terraform
-    unarchive:
-      src: https://releases.hashicorp.com/terraform/1.1.7/terraform_1.1.7_linux_amd64.zip
-      dest: /usr/local/bin
-      remote_src: yes
-      mode: 0755
-      owner: root
-      group: root
+  roles:
+    - workstations
 
 - hosts: web_servers
   become: true
-  tasks:
-
-  - name: install httpd & php support for apache (Rocky or CentOS)
-    tags: apache,httpd,centos,rocky
-    dnf:
-      name:
-        - httpd
-        - php
-      state: present
-    when: ansible_distribution in ["Rocky", "CentOS"]
-
-  - name: start httpd (Rocky or CentOS)
-    tags: apache,httpd,centos
-    service:
-      name: httpd
-      state: started
-      enabled: yes
-    when: ansible_distribution in ["Rocky", "CentOS"]
-
-  - name: install apache2 & php  package (Ubuntu)
-    tags: apache,apache2,ubuntu
-    apt:
-      name:
-        - apache2
-        - libapache2-mod-php
-      state: present
-    when: ansible_distribution == "Ubuntu"
-
-  - name: change -email adress for admin
-    tags: apache,centos,httpd
-    lineinfile:
-      path: /etc/httpd/conf/httpd.conf
-      regexp: '^ServerAdmin'
-      line: ServerAdmin somebody@somewhere.net
-    when: ansible_distribution in ["Rocky", "CentOS"]
-    register: httpd
-
-  - name: restart httpd (CentOS, Rocky)
-    tags: apache,centos,httpd
-    service:
-      name: httpd
-      state: restarted
-    when: httpd.changed
-
-  - name: copy defula html file for site
-    tags: apache,apache2,httpd
-    copy:
-      src: default_site.html
-      dest: /var/www/html/index.html
-      owner: root
-      group: root
-      mode: 0644
+  roles:
+    - web_servers
 
 - hosts: db_servers
   become: true
-  tasks:
-
-  - name: install mariadb package(Rocky or CentOS)
-    tags: centos,rocky,db,mariadb
-    dnf:
-      name: mariadb,mariadb-server
-      state: latest
-    when: ansible_distribution in ["Rocky", "CentOS"]
-
-  - name: install maraidb package(Ubuntu)
-    tags: ubuntu,db,mariadb
-    apt:
-      name: mariadb-server
-      status: latest
-    when: ansible_distribution == "Ubuntu"
+  roles:
+    - db_servers
 
 - hosts: file_servers
   become: true
-  tasks:
-
-  - name: install samba package
-    tags: samba,centos,rocky,ubuntu
-    package: 
-      name: samba
-      state: latest
+  roles:
+    - file_servers

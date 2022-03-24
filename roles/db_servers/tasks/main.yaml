@@ -1,0 +1,13 @@
+- name: install mariadb package(Rocky or CentOS)
+  tags: centos,rocky,db,mariadb
+  dnf:
+    name: mariadb,mariadb-server
+    state: latest
+  when: ansible_distribution in ["Rocky", "CentOS"]
+
+- name: install maraidb package(Ubuntu)
+  tags: ubuntu,db,mariadb
+  apt:
+    name: mariadb-server
+    status: latest
+  when: ansible_distribution == "Ubuntu"
