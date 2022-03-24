@@ -1,44 +1,26 @@
-- name: install httpd & php support for apache (Rocky or CentOS)
+- name: install httpd & php support for apache 
   tags: apache,httpd,centos,rocky
   dnf:
     name:
-      - httpd
-      - php
-    state: present
-  when: ansible_distribution in ["Rocky", "CentOS"]
+      - "{{ apache_package_name }}"
+      - "{{ php_package_name }}"
+    state: latest
 
-- name: start httpd (Rocky or CentOS)
+- name: start httpd
   tags: apache,httpd,centos
   service:
-    name: httpd
+    name: "{{ apache_service }}"
     state: started
     enabled: yes
-  when: ansible_distribution in ["Rocky", "CentOS"]
-
-- name: install apache2 & php  package (Ubuntu)
-  tags: apache,apache2,ubuntu
-  apt:
-    name:
-      - apache2
-      - libapache2-mod-php
-    state: present
-  when: ansible_distribution == "Ubuntu"
 
 - name: change -email adress for admin
   tags: apache,centos,httpd
   lineinfile:
     path: /etc/httpd/conf/httpd.conf
     regexp: '^ServerAdmin'
-    line: ServerAdmin somebody@somewhere.net
+    line: ServerAdmin somebody@somewhere.com
   when: ansible_distribution in ["Rocky", "CentOS"]
-  register: httpd
-
-- name: restart httpd (CentOS, Rocky)
-  tags: apache,centos,httpd
-  service:
-    name: httpd
-    state: restarted
-  when: httpd.changed
+  notify: restart_apache
 
 - name: copy defula html file for site
   tags: apache,apache2,httpd
